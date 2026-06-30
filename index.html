@@ -1,0 +1,2392 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lise Yazılı Notları</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ============================================
+           CSS DEĞİŞKENLERİ & TEMEL RESET
+           ============================================ */
+        :root {
+            --bg: #08080c;
+            --bg-secondary: #0f0f16;
+            --fg: #f2f0ed;
+            --fg-dim: #b0aead;
+            --muted: #5e5e6e;
+            --accent: #c9a84c;
+            --accent-light: #e8c96a;
+            --accent-glow: rgba(201, 168, 76, 0.15);
+            --card: rgba(255, 255, 255, 0.04);
+            --card-hover: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(201, 168, 76, 0.25);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-strong: rgba(255, 255, 255, 0.08);
+            --danger: #e05555;
+            --success: #4aba7a;
+            --warning: #d4a24e;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --blur: 20px;
+            --font: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ============================================
+           AKICI GRADİENT ARKA PLAN & ORB'LER
+           ============================================ */
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background:
+                radial-gradient(ellipse 80% 60% at 15% 50%, rgba(201, 168, 76, 0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 85% 20%, rgba(160, 110, 40, 0.05) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 50% at 50% 90%, rgba(120, 80, 30, 0.04) 0%, transparent 50%),
+                linear-gradient(160deg, #08080c 0%, #0e0e18 40%, #0a0a10 100%);
+            background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+            animation: fluidDrift 25s ease-in-out infinite;
+        }
+
+        @keyframes fluidDrift {
+            0%, 100% { background-position: 0% 50%, 100% 0%, 50% 100%, 0% 0%; }
+            33% { background-position: 80% 30%, 20% 80%, 80% 20%, 0% 0%; }
+            66% { background-position: 30% 70%, 70% 30%, 20% 60%, 0% 0%; }
+        }
+
+        /* Yüzen parlak orb'ler */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: -1;
+            will-change: transform;
+        }
+        .orb-1 {
+            width: 420px; height: 420px;
+            background: radial-gradient(circle, rgba(201, 168, 76, 0.10) 0%, transparent 70%);
+            top: -80px; left: -60px;
+            animation: orbMove1 30s ease-in-out infinite;
+            filter: blur(60px);
+        }
+        .orb-2 {
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(180, 120, 50, 0.07) 0%, transparent 70%);
+            bottom: -50px; right: -40px;
+            animation: orbMove2 35s ease-in-out infinite;
+            filter: blur(70px);
+        }
+        .orb-3 {
+            width: 280px; height: 280px;
+            background: radial-gradient(circle, rgba(140, 90, 30, 0.06) 0%, transparent 70%);
+            top: 40%; left: 60%;
+            animation: orbMove3 28s ease-in-out infinite;
+            filter: blur(80px);
+        }
+
+        @keyframes orbMove1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(120px, 80px) scale(1.1); }
+            50% { transform: translate(60px, 160px) scale(0.95); }
+            75% { transform: translate(-40px, 100px) scale(1.05); }
+        }
+        @keyframes orbMove2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-100px, -60px) scale(1.08); }
+            66% { transform: translate(-50px, -120px) scale(0.92); }
+        }
+        @keyframes orbMove3 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-80px, 60px); }
+        }
+
+        /* ============================================
+           CAM EFEKLI KART PİYESİ
+           ============================================ */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(var(--blur)) saturate(180%);
+            -webkit-backdrop-filter: blur(var(--blur)) saturate(180%);
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+        .glass-strong {
+            background: var(--glass-strong);
+            backdrop-filter: blur(24px) saturate(200%);
+            -webkit-backdrop-filter: blur(24px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        /* ============================================
+           LİSANS PANELİ
+           ============================================ */
+        #lisansPaneli {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.6s ease;
+        }
+        .lisans-kart {
+            width: 100%;
+            max-width: 420px;
+            padding: 48px 36px;
+            border-radius: var(--radius);
+            text-align: center;
+            animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .lisans-ikon {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #a08030);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 24px;
+            color: #08080c;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .lisans-kart h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+        }
+        .lisans-kart p {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .lisans-input-wrap {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .lisans-input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--fg);
+            font-family: var(--font);
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            outline: none;
+            transition: var(--transition);
+        }
+        .lisans-input::placeholder { color: var(--muted); font-size: 0.85rem; letter-spacing: 0; }
+        .lisans-input:focus {
+            border-color: var(--border-accent);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+        }
+        .lisans-hata {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: -12px;
+            margin-bottom: 16px;
+            min-height: 20px;
+            transition: var(--transition);
+        }
+        .btn-ana {
+            position: relative;
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--accent), #a08030);
+            color: #08080c;
+            font-family: var(--font);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+            transition: var(--transition);
+            letter-spacing: 0.01em;
+        }
+        .btn-ana:hover { transform: translateY(-1px); box-shadow: 0 6px 24px var(--accent-glow); }
+        .btn-ana:active { transform: translateY(0); }
+
+        /* Ripple efekti */
+        .ripple-span {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.35);
+            transform: scale(0);
+            animation: rippleAnim 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+        @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+        /* ============================================
+           YÜKLEME EKRANI
+           ============================================ */
+        #yuklemeEkrani {
+            position: fixed; inset: 0; z-index: 9998;
+            display: none; align-items: center; justify-content: center;
+            background: var(--bg);
+        }
+        .yukleyici {
+            display: flex; flex-direction: column; align-items: center; gap: 20px;
+        }
+        .yukleyici-cember {
+            width: 44px; height: 44px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .yukleyici-text { color: var(--muted); font-size: 0.85rem; }
+
+        /* ============================================
+           ANA UYGULAMA HEADER
+           ============================================ */
+        #anaUygulama { display: none; min-height: 100vh; }
+
+        header {
+            position: sticky; top: 0; z-index: 100;
+            padding: 0 24px;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(8, 8, 12, 0.75);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-alan {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .logo-ikon {
+            width: 36px; height: 36px;
+            border-radius: var(--radius-xs);
+            background: linear-gradient(135deg, var(--accent), #a08030);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: #08080c; font-weight: 800;
+        }
+        .logo-yazi {
+            font-size: 1.05rem; font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .logo-yazi span { color: var(--accent); }
+
+        /* Masaüstü Navigasyon */
+        .nav-masaustu {
+            display: flex; align-items: center; gap: 4px;
+        }
+        .nav-link {
+            padding: 8px 16px;
+            border-radius: var(--radius-xs);
+            color: var(--fg-dim);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none; background: none;
+            font-family: var(--font);
+            white-space: nowrap;
+        }
+        .nav-link:hover { color: var(--fg); background: rgba(255, 255, 255, 0.05); }
+        .nav-link.aktif { color: var(--accent); background: var(--accent-glow); }
+
+        /* Hamburger Butonu */
+        .hamburger {
+            display: none;
+            width: 40px; height: 40px;
+            border: none; background: none;
+            cursor: pointer;
+            flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 5px;
+            padding: 8px;
+            border-radius: var(--radius-xs);
+            transition: var(--transition);
+        }
+        .hamburger:hover { background: rgba(255, 255, 255, 0.05); }
+        .hamburger-line {
+            width: 20px; height: 2px;
+            background: var(--fg);
+            border-radius: 2px;
+            transition: var(--transition);
+            transform-origin: center;
+        }
+        .hamburger.acik .hamburger-line:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.acik .hamburger-line:nth-child(2) { opacity: 0; transform: scaleX(0); }
+        .hamburger.acik .hamburger-line:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* Mobil Menü Paneli */
+        .mobil-menu {
+            position: fixed;
+            top: 64px; right: 0;
+            width: 280px; height: calc(100vh - 64px);
+            background: rgba(12, 12, 18, 0.95);
+            backdrop-filter: blur(30px) saturate(200%);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            border-left: 1px solid var(--border);
+            padding: 20px 16px;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 99;
+            display: flex; flex-direction: column; gap: 4px;
+        }
+        .mobil-menu.acik { transform: translateX(0); }
+        .mobil-menu .nav-link {
+            padding: 12px 16px; font-size: 0.9rem;
+            border-radius: var(--radius-sm);
+            text-align: left;
+        }
+        .mobil-menu-overlay {
+            position: fixed; inset: 0; z-index: 98;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobil-menu-overlay.acik { opacity: 1; pointer-events: auto; }
+
+        /* ============================================
+           ANA İÇERİK ALANI
+           ============================================ */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        .sayfa { display: none; animation: fadeIn 0.4s ease; }
+        .sayfa.aktif { display: block; }
+
+        /* Hero Bölümü */
+        .hero {
+            text-align: center;
+            margin-bottom: 48px;
+            padding-top: 20px;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            margin-bottom: 14px;
+        }
+        .hero h1 .vurgu {
+            background: linear-gradient(135deg, var(--accent-light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            color: var(--muted);
+            font-size: clamp(0.9rem, 2vw, 1.05rem);
+            max-width: 540px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* ============================================
+           ARAMA ÇUBUĞU
+           ============================================ */
+        .arama-alani {
+            max-width: 520px;
+            margin: 0 auto 36px;
+            position: relative;
+        }
+        .arama-input {
+            width: 100%;
+            padding: 14px 18px 14px 46px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--fg);
+            font-family: var(--font);
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition);
+        }
+        .arama-input::placeholder { color: var(--muted); }
+        .arama-input:focus {
+            border-color: var(--border-accent);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+        }
+        .arama-ikon {
+            position: absolute;
+            left: 16px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+        .arama-sonuclari {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0; right: 0;
+            border-radius: var(--radius-sm);
+            background: rgba(15, 15, 22, 0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            max-height: 260px;
+            overflow-y: auto;
+            display: none;
+            z-index: 50;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+        .arama-sonuclari.goster { display: block; }
+        .arama-sonuc-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--fg-dim);
+            transition: var(--transition);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .arama-sonuc-item:last-child { border-bottom: none; }
+        .arama-sonuc-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--fg); }
+        .arama-sonuc-item i { color: var(--accent); font-size: 0.8rem; width: 16px; text-align: center; }
+
+        /* ============================================
+           SEÇİM KUTULARI
+           ============================================ */
+        .secim-alani {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            max-width: 720px;
+            margin: 0 auto 28px;
+        }
+        .secim-grup { position: relative; }
+        .secim-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+        .secim-select {
+            width: 100%;
+            padding: 13px 40px 13px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--fg);
+            font-family: var(--font);
+            font-size: 0.88rem;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: var(--transition);
+        }
+        .secim-select:focus {
+            border-color: var(--border-accent);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+        }
+        .secim-select option { background: #14141e; color: var(--fg); }
+        .secim-ok {
+            position: absolute;
+            right: 14px; bottom: 14px;
+            color: var(--muted);
+            font-size: 0.7rem;
+            pointer-events: none;
+        }
+
+        .btn-getir-wrap {
+            max-width: 720px;
+            margin: 0 auto 48px;
+            text-align: center;
+        }
+        .btn-getir {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 40px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(135deg, var(--accent), #a08030);
+            color: #08080c;
+            font-family: var(--font);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+        }
+        .btn-getir:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--accent-glow); }
+        .btn-getir:active { transform: translateY(0); }
+        .btn-getir:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ============================================
+           GALERİ ALANI
+           ============================================ */
+        .galeri-baslik {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .galeri-baslik i { color: var(--accent); }
+
+        #galeriAlani {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 48px;
+            min-height: 100px;
+        }
+
+        /* Not Kartı */
+        .not-karti {
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.3s ease;
+            position: relative;
+            animation: kartGelis 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+        .not-karti:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: var(--border-accent);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4), 0 0 24px rgba(201, 168, 76, 0.06);
+        }
+        .not-karti-gorsel {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 3/4;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .not-karti-gorsel img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            transition: transform 0.5s ease;
+        }
+        .not-karti:hover .not-karti-gorsel img { transform: scale(1.05); }
+
+        /* Görünmez Kalkan */
+        .kalkan {
+            position: absolute; inset: 0; z-index: 2;
+            background: transparent;
+            pointer-events: auto;
+        }
+        .not-karti-bilgi {
+            padding: 12px 14px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .not-karti-sayfa {
+            font-size: 0.78rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+        .favori-btn {
+            background: none; border: none;
+            color: var(--muted);
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 4px;
+            transition: var(--transition);
+            position: relative; z-index: 5;
+        }
+        .favori-btn:hover { color: var(--danger); transform: scale(1.2); }
+        .favori-btn.favoriledi { color: var(--danger); }
+
+        /* Görsel Yok Durumu */
+        .gorsel-yok {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+        .gorsel-yok i { font-size: 2rem; opacity: 0.4; }
+
+        /* ============================================
+           SKELETON LOADING
+           ============================================ */
+        .skeleton-kart {
+            border-radius: var(--radius);
+            overflow: hidden;
+            animation: kartGelis 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+        .skeleton-gorsel {
+            width: 100%; aspect-ratio: 3/4;
+            background: linear-gradient(110deg, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 70%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
+        }
+        .skeleton-bilgi {
+            padding: 12px 14px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .skeleton-cizgi {
+            height: 10px; border-radius: 5px;
+            background: linear-gradient(110deg, rgba(255,255,255,0.03) 30%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 70%);
+            background-size: 200% 100%;
+            animation: skeletonShimmer 1.5s ease-in-out infinite;
+        }
+        @keyframes skeletonShimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ============================================
+           BOŞ SONUÇ EKRANI
+           ============================================ */
+        .bos-ekran {
+            text-align: center;
+            padding: 60px 20px;
+            display: none;
+        }
+        .bos-ekran.goster { display: block; }
+        .bos-ekran-ikon {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.03);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 2.4rem;
+            color: var(--muted);
+            opacity: 0.5;
+        }
+        .bos-ekran h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+        .bos-ekran p { color: var(--muted); font-size: 0.88rem; }
+
+        /* ============================================
+           FAVORİLER & SON GÖRÜNTÜLENENLER
+           ============================================ */
+        .alt-bolum {
+            margin-bottom: 40px;
+        }
+        .alt-bolum-baslik {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .alt-bolum-baslik h3 {
+            font-size: 1rem; font-weight: 700;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .alt-bolum-baslik h3 i { color: var(--accent); font-size: 0.9rem; }
+        .alt-bolum-temizle {
+            background: none; border: none;
+            color: var(--muted); font-size: 0.78rem;
+            cursor: pointer; font-family: var(--font);
+            padding: 4px 10px; border-radius: var(--radius-xs);
+            transition: var(--transition);
+        }
+        .alt-bolum-temizle:hover { color: var(--danger); background: rgba(224, 85, 85, 0.1); }
+
+        .mini-kart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        .mini-kart {
+            padding: 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+        }
+        .mini-kart:hover { background: var(--card-hover); transform: translateY(-2px); }
+        .mini-kart-ders { font-size: 0.78rem; font-weight: 600; margin-bottom: 4px; }
+        .mini-kart-detay { font-size: 0.7rem; color: var(--muted); }
+
+        /* ============================================
+           LIGHTBOX MODAL
+           ============================================ */
+        #lightboxModal {
+            position: fixed; inset: 0; z-index: 9000;
+            display: none; align-items: center; justify-content: center;
+            background: rgba(4, 4, 8, 0.92);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            padding: 20px;
+        }
+        #lightboxModal.acik { display: flex; animation: fadeIn 0.3s ease; }
+
+        .lightbox-icerik {
+            position: relative;
+            max-width: 90vw; max-height: 88vh;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .lightbox-img-wrap {
+            overflow: hidden;
+            border-radius: var(--radius);
+            max-width: 100%; max-height: 85vh;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+        .lightbox-img-wrap img {
+            display: block;
+            max-width: 90vw;
+            max-height: 85vh;
+            object-fit: contain;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+            transition: transform 0.3s ease;
+            transform-origin: center center;
+        }
+        .lightbox-kalkan {
+            position: absolute; inset: 0; z-index: 2;
+            background: transparent;
+            pointer-events: auto;
+        }
+
+        /* Lightbox Navigasyon Butonları */
+        .lb-nav {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--fg);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10;
+        }
+        .lb-nav:hover { background: rgba(255, 255, 255, 0.12); border-color: var(--border-accent); }
+        .lb-onceki { left: -64px; }
+        .lb-sonraki { right: -64px; }
+        .lb-kapat {
+            position: absolute; top: -52px; right: 0;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: var(--fg);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 10;
+        }
+        .lb-kapat:hover { background: rgba(224, 85, 85, 0.2); border-color: rgba(224, 85, 85, 0.4); color: var(--danger); }
+        .lb-sayac {
+            position: absolute; bottom: -40px; left: 50%;
+            transform: translateX(-50%);
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .lb-zoom-bilgi {
+            position: absolute; top: -52px; left: 0;
+            color: var(--muted);
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .lb-zoom-bilgi.goster { opacity: 1; }
+
+        /* ============================================
+           TOAST BİLDİRİMLERİ
+           ============================================ */
+        #toastKonteyneri {
+            position: fixed;
+            top: 80px; right: 20px;
+            z-index: 10000;
+            display: flex; flex-direction: column; gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            pointer-events: auto;
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            background: rgba(15, 15, 22, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            font-size: 0.84rem;
+            color: var(--fg-dim);
+            display: flex; align-items: center; gap: 10px;
+            min-width: 280px; max-width: 400px;
+            animation: toastGiris 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: var(--transition);
+        }
+        .toast.cikis {
+            animation: toastCikis 0.3s ease forwards;
+        }
+        .toast-icon { font-size: 1rem; flex-shrink: 0; }
+        .toast.basari .toast-icon { color: var(--success); }
+        .toast.hata .toast-icon { color: var(--danger); }
+        .toast.uyari .toast-icon { color: var(--warning); }
+        .toast.bilgi .toast-icon { color: var(--fg-dim); }
+
+        @keyframes toastGiris { from { opacity: 0; transform: translateX(40px) scale(0.95); } }
+        @keyframes toastCikis { to { opacity: 0; transform: translateX(40px) scale(0.95); } }
+
+        /* ============================================
+           GÜVENLİK UYARISI
+           ============================================ */
+        #guvenlikUyarisi {
+            position: fixed; inset: 0; z-index: 8500;
+            display: none; align-items: center; justify-content: center;
+            background: rgba(4, 4, 8, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            text-align: center;
+            padding: 40px;
+        }
+        #guvenlikUyarisi.goster { display: flex; }
+        .guvenlik-ikon {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: rgba(224, 85, 85, 0.1);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 2rem; color: var(--danger);
+        }
+        .guvenlik-uyari-text h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 12px; color: var(--danger); }
+        .guvenlik-uyari-text p { color: var(--muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto; line-height: 1.6; }
+
+        /* ============================================
+           HAKKINDA & İLETİŞİM SAYFALARI
+           ============================================ */
+        .icerik-kart {
+            padding: 40px;
+            border-radius: var(--radius);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .icerik-kart h2 {
+            font-size: 1.5rem; font-weight: 800;
+            margin-bottom: 16px; letter-spacing: -0.02em;
+        }
+        .icerik-kart p {
+            color: var(--fg-dim); font-size: 0.9rem;
+            line-height: 1.7; margin-bottom: 14px;
+        }
+        .iletisim-form { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+        .iletisim-input, .iletisim-textarea {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--fg);
+            font-family: var(--font);
+            font-size: 0.88rem;
+            outline: none;
+            transition: var(--transition);
+        }
+        .iletisim-textarea { min-height: 120px; resize: vertical; }
+        .iletisim-input:focus, .iletisim-textarea:focus {
+            border-color: var(--border-accent);
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.08);
+        }
+        .iletisim-input::placeholder, .iletisim-textarea::placeholder { color: var(--muted); }
+
+        .ozellik-listesi {
+            list-style: none;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            margin-top: 16px;
+        }
+        .ozellik-listesi li {
+            padding: 10px 14px;
+            border-radius: var(--radius-xs);
+            background: rgba(255, 255, 255, 0.03);
+            font-size: 0.82rem;
+            color: var(--fg-dim);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .ozellik-listesi li i { color: var(--accent); font-size: 0.75rem; }
+
+        /* ============================================
+           GENEL ANİMASYONLAR
+           ============================================ */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes kartGelis {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           RESPONSIVE TASARIM
+           ============================================ */
+        @media (max-width: 768px) {
+            .nav-masaustu { display: none; }
+            .hamburger { display: flex; }
+            .secim-alani { grid-template-columns: 1fr; }
+            #galeriAlani { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .mini-kart-grid { grid-template-columns: repeat(2, 1fr); }
+            .ozellik-listesi { grid-template-columns: 1fr; }
+            .lb-onceki { left: 8px; }
+            .lb-sonraki { right: 8px; }
+            .lb-nav { width: 40px; height: 40px; font-size: 0.85rem; }
+            .lb-kapat { top: -48px; }
+            .lightbox-img-wrap img { max-width: 95vw; max-height: 75vh; }
+            main { padding: 24px 16px 60px; }
+            .hero { margin-bottom: 32px; }
+            .icerik-kart { padding: 24px; }
+            .lisans-kart { padding: 36px 24px; }
+        }
+
+        @media (max-width: 480px) {
+            #galeriAlani { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .not-karti-bilgi { padding: 8px 10px; }
+            .not-karti-sayfa { font-size: 0.7rem; }
+            .mini-kart-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .mini-kart { padding: 10px; }
+        }
+
+        /* ============================================
+           ERİŞİLEBİLİRLİK & HAREKET TERCİHİ
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            .orb { display: none; }
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        /* Özel scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.14); }
+    </style>
+</head>
+<body>
+    <!-- Arka Plan Katmanı -->
+    <div class="bg-canvas" aria-hidden="true"></div>
+    <div class="orb orb-1" aria-hidden="true"></div>
+    <div class="orb orb-2" aria-hidden="true"></div>
+    <div class="orb orb-3" aria-hidden="true"></div>
+
+    <!-- ==========================================
+         LİSANS PANELİ
+         ========================================== -->
+    <div id="lisansPaneli" role="dialog" aria-modal="true" aria-label="Lisans Doğrulama">
+        <div class="lisans-kart glass-strong">
+            <div class="lisans-ikon" aria-hidden="true">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2>Lisans Doğrulama</h2>
+            <p>Erişim sağlamak için geçerli bir lisans kodu giriniz.</p>
+            <div class="lisans-input-wrap">
+                <input
+                    type="text"
+                    id="lisansInput"
+                    class="lisans-input"
+                    placeholder="ZEYX-XXXX-OK"
+                    autocomplete="off"
+                    spellcheck="false"
+                    aria-label="Lisans kodu"
+                    maxlength="13"
+                >
+            </div>
+            <div class="lisans-hata" id="lisansHata" role="alert" aria-live="polite"></div>
+            <button class="btn-ana" id="lisansButon" aria-label="Lisansı doğrula">
+                Doğrula ve Giriş Yap
+            </button>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         YÜKLEME EKRANI
+         ========================================== -->
+    <div id="yuklemeEkrani" role="status" aria-label="Yükleniyor">
+        <div class="yukleyici">
+            <div class="yukleyici-cember" aria-hidden="true"></div>
+            <span class="yukleyici-text">Doğrulanıyor...</span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         ANA UYGULAMA
+         ========================================== -->
+    <div id="anaUygulama">
+        <!-- Header -->
+        <header role="banner">
+            <div class="logo-alan">
+                <div class="logo-ikon" aria-hidden="true">L</div>
+                <div class="logo-yazi">Lise <span>Yazılı Notları</span></div>
+            </div>
+            <nav class="nav-masaustu" role="navigation" aria-label="Ana navigasyon">
+                <button class="nav-link aktif" data-sayfa="anaSayfa">Ana Sayfa</button>
+                <button class="nav-link" data-sayfa="sinif9">9. Sınıf</button>
+                <button class="nav-link" data-sayfa="sinif10">10. Sınıf</button>
+                <button class="nav-link" data-sayfa="sinif11">11. Sınıf</button>
+                <button class="nav-link" data-sayfa="hakkinda">Hakkında</button>
+                <button class="nav-link" data-sayfa="iletisim">İletişim</button>
+            </nav>
+            <button class="hamburger" id="hamburgerBtn" aria-label="Menüyü aç" aria-expanded="false">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </header>
+
+        <!-- Mobil Menü Overlay -->
+        <div class="mobil-menu-overlay" id="mobilOverlay" aria-hidden="true"></div>
+
+        <!-- Mobil Menü Paneli -->
+        <nav class="mobil-menu" id="mobilMenu" role="navigation" aria-label="Mobil navigasyon">
+            <button class="nav-link aktif" data-sayfa="anaSayfa">Ana Sayfa</button>
+            <button class="nav-link" data-sayfa="sinif9">9. Sınıf</button>
+            <button class="nav-link" data-sayfa="sinif10">10. Sınıf</button>
+            <button class="nav-link" data-sayfa="sinif11">11. Sınıf</button>
+            <button class="nav-link" data-sayfa="hakkinda">Hakkında</button>
+            <button class="nav-link" data-sayfa="iletisim">İletişim</button>
+        </nav>
+
+        <!-- Ana İçerik -->
+        <main>
+            <!-- ANA SAYFA -->
+            <section class="sayfa aktif" id="sayfaAnaSayfa">
+                <div class="hero">
+                    <h1>Lise <span class="vurgu">Yazılı Notları</span></h1>
+                    <p>Dersinizi ve yazılı türünü seçerek notlara ulaşabilirsiniz.</p>
+                </div>
+
+                <!-- Arama Çubuğu -->
+                <div class="arama-alani">
+                    <i class="fa-solid fa-magnifying-glass arama-ikon" aria-hidden="true"></i>
+                    <input
+                        type="text"
+                        id="aramaInput"
+                        class="arama-input"
+                        placeholder="Ders veya sınıf ara..."
+                        aria-label="Ders veya sınıf arama"
+                        autocomplete="off"
+                    >
+                    <div class="arama-sonuclari" id="aramaSonuclari" role="listbox" aria-label="Arama sonuçları"></div>
+                </div>
+
+                <!-- Seçim Kutuları -->
+                <div class="secim-alani">
+                    <div class="secim-grup">
+                        <label class="secim-label" for="secimSinif">Sınıf Seçimi</label>
+                        <select id="secimSinif" class="secim-select" aria-label="Sınıf seç">
+                            <option value="">Seçiniz</option>
+                            <option value="9">9. Sınıf</option>
+                            <option value="10">10. Sınıf</option>
+                            <option value="11">11. Sınıf</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down secim-ok" aria-hidden="true"></i>
+                    </div>
+                    <div class="secim-grup">
+                        <label class="secim-label" for="secimDers">Ders Seçimi</label>
+                        <select id="secimDers" class="secim-select" aria-label="Ders seç">
+                            <option value="">Seçiniz</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down secim-ok" aria-hidden="true"></i>
+                    </div>
+                    <div class="secim-grup">
+                        <label class="secim-label" for="secimYazili">Yazılı Türü</label>
+                        <select id="secimYazili" class="secim-select" aria-label="Yazılı türü seç">
+                            <option value="">Seçiniz</option>
+                            <option value="11">1. Dönem 1. Yazılı</option>
+                            <option value="12">1. Dönem 2. Yazılı</option>
+                            <option value="21">2. Dönem 1. Yazılı</option>
+                            <option value="22">2. Dönem 2. Yazılı</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down secim-ok" aria-hidden="true"></i>
+                    </div>
+                </div>
+
+                <div class="btn-getir-wrap">
+                    <button class="btn-getir" id="getirButon" disabled aria-label="Notları getir">
+                        <i class="fa-solid fa-folder-open" aria-hidden="true"></i>
+                        Notları Getir
+                    </button>
+                </div>
+
+                <!-- Galeri Alanı -->
+                <div class="galeri-baslik" id="galeriBaslik" style="display:none">
+                    <i class="fa-solid fa-images" aria-hidden="true"></i>
+                    <span id="galeriBaslikText"></span>
+                </div>
+                <div id="galeriAlani" role="region" aria-label="Not görselleri"></div>
+
+                <!-- Boş Sonuç Ekranı -->
+                <div class="bos-ekran" id="bosEkran" role="status">
+                    <div class="bos-ekran-ikon" aria-hidden="true">
+                        <i class="fa-solid fa-file-circle-question"></i>
+                    </div>
+                    <h3>Görsel Bulunamadı</h3>
+                    <p>Bu kombinasyon için henüz yüklenmiş bir not bulunmuyor.</p>
+                </div>
+
+                <!-- Son Görüntülenenler -->
+                <div class="alt-bolum" id="sonGoruntulenlerBolum" style="display:none">
+                    <div class="alt-bolum-baslik">
+                        <h3><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Son Görüntülenenler</h3>
+                        <button class="alt-bolum-temizle" id="sonTemizle" aria-label="Son görüntülenenleri temizle">Temizle</button>
+                    </div>
+                    <div class="mini-kart-grid" id="sonGoruntulenlerGrid"></div>
+                </div>
+
+                <!-- Favoriler -->
+                <div class="alt-bolum" id="favorilerBolum" style="display:none">
+                    <div class="alt-bolum-baslik">
+                        <h3><i class="fa-solid fa-heart" aria-hidden="true"></i> Favoriler</h3>
+                        <button class="alt-bolum-temizle" id="favoriTemizle" aria-label="Favorileri temizle">Temizle</button>
+                    </div>
+                    <div class="mini-kart-grid" id="favorilerGrid"></div>
+                </div>
+            </section>
+
+            <!-- HAKKINDA SAYFASI -->
+            <section class="sayfa" id="sayfaHakkinda">
+                <div class="icerik-kart glass">
+                    <h2>Hakkında</h2>
+                    <p>Lise Yazılı Notları, lise öğrencilerinin ders notlarına hızlı ve kolay bir şekilde erişebilmeleri için tasarlanmış premium bir platformdur. Tüm notlar yüksek çözünürlüklü görseller olarak sunulmaktadır.</p>
+                    <p>Platform, gelişmiş güvenlik önlemleri ile korunmakta ve yalnızca yetkili kullanıcılar tarafından erişilebilmektedir. Sunucusuz mimari sayesinde hızlı ve kesintisiz bir deneyim sunar.</p>
+                    <ul class="ozellik-listesi">
+                        <li><i class="fa-solid fa-check" aria-hidden="true"></i> 9, 10 ve 11. sınıf desteği</li>
+                        <li><i class="fa-solid fa-check" aria-hidden="true"></i> 10 farklı ders kategorisi</li>
+                        <li><i class="fa-solid fa-check" aria-hidden="true"></i> 4 farklı yazılı türü</li>
+                        <li><i class="fa-solid fa-check" aria-hidden="true"></i> Yüksek çözünürlüklü görseller</li>
+                        <li><i class="fa-solid fa-check" aria-hidden="true"></i> Gelişmiş lightbox görüntüleyici</li>
+                        <li><i class="fa-solid fa-check" aria-hidden="true"></i> Favori ve geçmiş sistemi</li>
+                        <li><i class="fa-solid fa-check" aria-hidden="true"></i> Tamamen responsive tasarım</li>
+                        <li><i class="fa-solid fa-check" aria-hidden="true"></i> Algoritmik lisans koruması</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- İLETİŞİM SAYFASI -->
+            <section class="sayfa" id="sayfaIletisim">
+                <div class="icerik-kart glass">
+                    <h2>İletişim</h2>
+                    <p>Herhangi bir soru, öneri veya geri bildiriminiz için aşağıdaki formu doldurabilirsiniz.</p>
+                    <form class="iletisim-form" id="iletisimForm" novalidate>
+                        <input type="text" class="iletisim-input" placeholder="Adınız" aria-label="Adınız" required>
+                        <input type="email" class="iletisim-input" placeholder="E-posta adresiniz" aria-label="E-posta adresiniz" required>
+                        <textarea class="iletisim-textarea" placeholder="Mesajınız..." aria-label="Mesajınız" required></textarea>
+                        <button type="submit" class="btn-ana" style="max-width:200px">
+                            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Gönder
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         LIGHTBOX MODAL
+         ========================================== -->
+    <div id="lightboxModal" role="dialog" aria-modal="true" aria-label="Görsel görüntüleyici">
+        <div class="lightbox-icerik">
+            <button class="lb-kapat" id="lbKapat" aria-label="Kapat"><i class="fa-solid fa-xmark"></i></button>
+            <span class="lb-zoom-bilgi" id="lbZoomBilgi">Scroll ile yakınlaştır</span>
+            <button class="lb-nav lb-onceki" id="lbOnceki" aria-label="Önceki görsel"><i class="fa-solid fa-chevron-left"></i></button>
+            <div class="lightbox-img-wrap" id="lbImgWrap">
+                <img id="lbImg" src="" alt="Not görseli" draggable="false">
+                <div class="lightbox-kalkan"></div>
+            </div>
+            <button class="lb-nav lb-sonraki" id="lbSonraki" aria-label="Sonraki görsel"><i class="fa-solid fa-chevron-right"></i></button>
+            <span class="lb-sayac" id="lbSayac"></span>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         TOAST KONTEYNIRI
+         ========================================== -->
+    <div id="toastKonteyneri" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ==========================================
+         GÜVENLİK UYARISI
+         ========================================== -->
+    <div id="guvenlikUyarisi" role="alert" aria-label="Güvenlik uyarısı">
+        <div class="guvenlik-uyari-text">
+            <div class="guvenlik-ikon" aria-hidden="true">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2>Güvenlik Uyarısı</h2>
+            <p>Geliştirici araçları algılandı. İçerikler güvenlik nedeniyle gizlenmiştir. Lütfen tarayıcı araçlarını kapatınız.</p>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         JAVASCRIPT
+         ========================================== -->
+    <script>
+    (function() {
+        'use strict';
+
+        /* ============================================
+           VERİ KÜMESİ
+           ============================================ */
+        const DERSLER = [
+            { ad: 'Matematik', kod: 'MAT' },
+            { ad: 'Türk Dili ve Edebiyatı', kod: 'EDE' },
+            { ad: 'Fizik', kod: 'FIZ' },
+            { ad: 'Kimya', kod: 'KIM' },
+            { ad: 'Biyoloji', kod: 'BIO' },
+            { ad: 'Tarih', kod: 'TAR' },
+            { ad: 'Coğrafya', kod: 'COG' },
+            { ad: 'İngilizce', kod: 'ING' },
+            { ad: 'Din Kültürü', kod: 'DIN' },
+            { ad: 'Felsefe', kod: 'FEL' }
+        ];
+
+        const YAZILI_TURLERI = [
+            { ad: '1. Dönem 1. Yazılı', kod: '11' },
+            { ad: '1. Dönem 2. Yazılı', kod: '12' },
+            { ad: '2. Dönem 1. Yazılı', kod: '21' },
+            { ad: '2. Dönem 2. Yazılı', kod: '22' }
+        ];
+
+        const GORSEL_SAYISI = 5;
+
+        /* ============================================
+           1. GÜVENLİK MODÜLÜ
+           ============================================ */
+
+        // 1.1 - Lisans Doğrulama Algoritması
+        // Kural: ZEYX- ile başlamalı, ortadaki 4 rakamın toplamı 20 olmalı, -OK ile bitmeli
+        function lisansDogrula(kod) {
+            if (typeof kod !== 'string') return false;
+            const upper = kod.trim().toUpperCase();
+
+            // ZEYX- ile başla
+            if (!upper.startsWith('ZEYX-')) return false;
+
+            // -OK ile bit
+            if (!upper.endsWith('-OK')) return false;
+
+            // Orta kısmı çıkar (ZEYX- ile -OK arası)
+            const orta = upper.slice(5, -3);
+            if (orta.length !== 4) return false;
+
+            // Sadece rakam mı?
+            if (!/^\d{4}$/.test(orta)) return false;
+
+            // Rakamlar toplamı 20 mi?
+            const toplam = orta.split('').reduce((acc, c) => acc + parseInt(c, 10), 0);
+            if (toplam !== 20) return false;
+
+            return true;
+        }
+
+        // 1.2 - IP Kilitleme Sistemi
+        async function getirIP() {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                const response = await fetch('https://api.ipify.org?format=json', { signal: controller.signal });
+                clearTimeout(timeoutId);
+                const data = await response.json();
+                return data.ip;
+            } catch {
+                return null;
+            }
+        }
+
+        async function ipKilitKontrol(lisansKodu) {
+            const mevcut = localStorage.getItem('lisans_veri');
+            if (!mevcut) return 'yeni';
+
+            try {
+                const veri = JSON.parse(mevcut);
+                if (veri.lisans !== lisansKodu) return 'farkli_lisans';
+
+                // Mevcut IP'yi kontrol et
+                const mevcutIP = veri.ip;
+                if (!mevcutIP) return 'ip_yok';
+
+                const anlikIP = await getirIP();
+                if (!anlikIP) return 'ip_alinamadi';
+
+                if (anlikIP !== mevcutIP) return 'ip_eslesmiyor';
+                return 'eslesti';
+            } catch {
+                return 'hata';
+            }
+        }
+
+        function lisansKaydet(lisansKodu, ip) {
+            const veri = { lisans: lisansKodu, ip: ip || null, tarih: Date.now() };
+            localStorage.setItem('lisans_veri', JSON.stringify(veri));
+        }
+
+        // 1.3 - DevTools Algılama
+        let devtoolsAcik = false;
+
+        function devToolsKontrol() {
+            // Yöntem 1: Pencere boyutu farkı
+            const esik = 160;
+            const genislikFarki = window.outerWidth - window.innerWidth;
+            const yukseklikFarki = window.outerHeight - window.innerHeight;
+            const boyutKontrol = genislikFarki > esik || yukseklikFarki > esik;
+
+            if (boyutKontrol && !devtoolsAcik) {
+                devtoolsAcik = true;
+                guvenlikUyariGoster(true);
+            } else if (!boyutKontrol && devtoolsAcik) {
+                devtoolsAcik = false;
+                guvenlikUyariGoster(false);
+            }
+        }
+
+        // Yöntem 2: Console getter tuzağı
+        function consoleTuzagiKur() {
+            const el = document.createElement('div');
+            Object.defineProperty(el, 'id', {
+                get: function() {
+                    devtoolsAcik = true;
+                    guvenlikUyariGoster(true);
+                }
+            });
+            console.log('%c', el);
+            console.clear();
+        }
+
+        function guvenlikUyariGoster(goster) {
+            const galeri = document.getElementById('galeriAlani');
+            const uyari = document.getElementById('guvenlikUyarisi');
+            if (goster) {
+                if (galeri) galeri.style.display = 'none';
+                if (uyari) uyari.classList.add('goster');
+            } else {
+                if (uyari) uyari.classList.remove('goster');
+                // Galeri durumunu geri yükle
+                if (galeri && galeri.children.length > 0) {
+                    galeri.style.display = '';
+                }
+            }
+        }
+
+        // DevTools algılama döngüsü
+        setInterval(devToolsKontrol, 800);
+
+        // 1.4 - Klavye ve Fare Engelleme
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+I (İncele)
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+J (Konsol)
+            if (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+C (Öğe Seç)
+            if (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+P (Yazdır)
+            if (e.ctrlKey && (e.key === 'P' || e.key === 'p' || e.keyCode === 80)) {
+                e.preventDefault();
+                return false;
+            }
+            // PrintScreen
+            if (e.key === 'PrintScreen' || e.keyCode === 44) {
+                e.preventDefault();
+                document.body.style.display = 'none';
+                setTimeout(() => { document.body.style.display = ''; }, 100);
+                return false;
+            }
+            // Ctrl+S (Kaydet)
+            if (e.ctrlKey && (e.key === 'S' || e.key === 's' || e.keyCode === 83)) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+U (Kaynak)
+            if (e.ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Sağ tık engelle
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        /* ============================================
+           2. TOAST BİLDİRİM MODÜLÜ
+           ============================================ */
+        function toastGoster(mesaj, tur = 'bilgi') {
+            const konteyner = document.getElementById('toastKonteyneri');
+            const toast = document.createElement('div');
+            toast.className = `toast ${tur}`;
+
+            const ikonlar = {
+                basari: 'fa-solid fa-circle-check',
+                hata: 'fa-solid fa-circle-xmark',
+                uyari: 'fa-solid fa-triangle-exclamation',
+                bilgi: 'fa-solid fa-circle-info'
+            };
+
+            toast.innerHTML = `
+                <i class="toast-icon ${ikonlar[tur] || ikonlar.bilgi}" aria-hidden="true"></i>
+                <span>${mesaj}</span>
+            `;
+
+            konteyner.appendChild(toast);
+
+            // 3.5 saniye sonra otomatik kapat
+            setTimeout(() => {
+                toast.classList.add('cikis');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        /* ============================================
+           3. RIPPLE EFEKTI
+           ============================================ */
+        function rippleEkle(e) {
+            const btn = e.currentTarget;
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple-span';
+            const rect = btn.getBoundingClientRect();
+            const boyut = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = boyut + 'px';
+            ripple.style.left = (e.clientX - rect.left - boyut / 2) + 'px';
+            ripple.style.top = (e.clientY - rect.top - boyut / 2) + 'px';
+            btn.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }
+
+        // Tüm btn-ana butonlarına ripple ekle
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-ana, .btn-getir');
+            if (btn) rippleEkle(e);
+        });
+
+        /* ============================================
+           4. LİSANS PANELİ YÖNETİMİ
+           ============================================ */
+        const lisansPaneli = document.getElementById('lisansPaneli');
+        const lisansInput = document.getElementById('lisansInput');
+        const lisansHata = document.getElementById('lisansHata');
+        const lisansButon = document.getElementById('lisansButon');
+        const yuklemeEkrani = document.getElementById('yuklemeEkrani');
+        const anaUygulama = document.getElementById('anaUygulama');
+
+        // Lisans butonuna tıkla
+        lisansButon.addEventListener('click', async function() {
+            const kod = lisansInput.value.trim();
+
+            // Boş kontrol
+            if (!kod) {
+                lisansHata.textContent = 'Lütfen bir lisans kodu giriniz.';
+                lisansInput.focus();
+                return;
+            }
+
+            // Algoritmik doğrulama
+            if (!lisansDogrula(kod)) {
+                lisansHata.textContent = 'Geçersiz lisans kodu. Lütfen kontrol ediniz.';
+                lisansInput.focus();
+                lisansInput.select();
+                return;
+            }
+
+            // IP kilidi kontrolü
+            lisansHata.textContent = '';
+            yuklemeEkrani.style.display = 'flex';
+            lisansPaneli.style.display = 'none';
+
+            const ipDurum = await ipKilitKontrol(kod.toUpperCase());
+
+            yuklemeEkrani.style.display = 'none';
+
+            switch (ipDurum) {
+                case 'eslesti':
+                case 'yeni':
+                case 'ip_alinamadi':
+                    // Başarılı giriş
+                    const ip = await getirIP();
+                    lisansKaydet(kod.toUpperCase(), ip);
+                    uygulamayiGoster();
+                    toastGoster('Lisans başarıyla doğrulandı.', 'basari');
+                    break;
+                case 'ip_eslesmiyor':
+                    lisansPaneli.style.display = 'flex';
+                    lisansHata.textContent = 'Bu lisans kodu başka bir ağda/cihazda kilitlenmiştir!';
+                    toastGoster('IP uyuşmazlığı algılandı.', 'hata');
+                    break;
+                case 'farkli_lisans':
+                    lisansPaneli.style.display = 'flex';
+                    lisansHata.textContent = 'Bu cihazda farklı bir lisans kayıtlı.';
+                    break;
+                default:
+                    lisansPaneli.style.display = 'flex';
+                    lisansHata.textContent = 'Doğrulama sırasında bir hata oluştu. Tekrar deneyiniz.';
+                    break;
+            }
+        });
+
+        // Enter tuşuyla doğrula
+        lisansInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                lisansButon.click();
+            }
+        });
+
+        function uygulamayiGoster() {
+            lisansPaneli.style.display = 'none';
+            yuklemeEkrani.style.display = 'none';
+            anaUygulama.style.display = 'block';
+            consoleTuzagiKur();
+            altBolumleriYukle();
+        }
+
+        /* ============================================
+           5. NAVİGASYON YÖNETİMİ
+           ============================================ */
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const mobilMenu = document.getElementById('mobilMenu');
+        const mobilOverlay = document.getElementById('mobilOverlay');
+
+        function menuAcKapat() {
+            const acik = mobilMenu.classList.toggle('acik');
+            hamburgerBtn.classList.toggle('acik', acik);
+            mobilOverlay.classList.toggle('acik', acik);
+            hamburgerBtn.setAttribute('aria-expanded', acik);
+        }
+
+        hamburgerBtn.addEventListener('click', menuAcKapat);
+        mobilOverlay.addEventListener('click', menuAcKapat);
+
+        // Sayfa geçişi
+        function sayfaGecis(sayfaId) {
+            // Menüyü kapat
+            mobilMenu.classList.remove('acik');
+            hamburgerBtn.classList.remove('acik');
+            mobilOverlay.classList.remove('acik');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+
+            // Tüm sayfaları gizle
+            document.querySelectorAll('.sayfa').forEach(s => s.classList.remove('aktif'));
+
+            // Tüm nav linklerinden aktif sınıfı kaldır
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('aktif'));
+
+            // Hedef sayfayı göster
+            const hedef = document.getElementById('sayfa' + sayfaId.charAt(0).toUpperCase() + sayfaId.slice(1));
+            if (hedef) {
+                hedef.classList.add('aktif');
+            }
+
+            // Nav linklerini aktif et
+            document.querySelectorAll(`.nav-link[data-sayfa="${sayfaId}"]`).forEach(l => l.classList.add('aktif'));
+
+            // Sınıf sayfalarında seçim kutusunu önceden doldur
+            if (sayfaId === 'sinif9' || sayfaId === 'sinif10' || sayfaId === 'sinif11') {
+                // Ana sayfaya git ve sınıfı seç
+                document.querySelectorAll('.sayfa').forEach(s => s.classList.remove('aktif'));
+                document.getElementById('sayfaAnaSayfa').classList.add('aktif');
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('aktif'));
+                document.querySelectorAll(`.nav-link[data-sayfa="${sayfaId}"]`).forEach(l => l.classList.add('aktif'));
+                document.querySelectorAll('.nav-link[data-sayfa="anaSayfa"]').forEach(l => l.classList.add('aktif'));
+
+                const sinifNum = sayfaId.replace('sinif', '');
+                document.getElementById('secimSinif').value = sinifNum;
+                secimKontrol();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Nav linklerine tıklama
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                sayfaGecis(this.dataset.sayfa);
+            });
+        });
+
+        /* ============================================
+           6. SEÇİM KUTULARI YÖNETİMİ
+           ============================================ */
+        const secimSinif = document.getElementById('secimSinif');
+        const secimDers = document.getElementById('secimDers');
+        const secimYazili = document.getElementById('secimYazili');
+        const getirButon = document.getElementById('getirButon');
+
+        // Ders seçim kutusunu doldur
+        DERSLER.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.kod;
+            opt.textContent = `${d.ad} (${d.kod})`;
+            secimDers.appendChild(opt);
+        });
+
+        // Seçim değişikliklerinde buton durumunu güncelle
+        [secimSinif, secimDers, secimYazili].forEach(sel => {
+            sel.addEventListener('change', secimKontrol);
+        });
+
+        function secimKontrol() {
+            const dolu = secimSinif.value && secimDers.value && secimYazili.value;
+            getirButon.disabled = !dolu;
+        }
+
+        /* ============================================
+           7. ARAMA MODÜLÜ
+           ============================================ */
+        const aramaInput = document.getElementById('aramaInput');
+        const aramaSonuclari = document.getElementById('aramaSonuclari');
+
+        // Arama veri seti oluştur
+        function aramaVerisiOlustur() {
+            const veriler = [];
+            ['9', '10', '11'].forEach(sinif => {
+                DERSLER.forEach(ders => {
+                    YAZILI_TURLERI.forEach(yazili => {
+                        veriler.push({
+                            sinif: sinif,
+                            sinifAd: sinif + '. Sınıf',
+                            ders: ders.kod,
+                            dersAd: ders.ad,
+                            yazili: yazili.kod,
+                            yaziliAd: yazili.ad,
+                            etiket: `${sinif}. Sınıf ${ders.ad} ${yazili.ad}`,
+                            aramaMetni: `${sinif} sınıf ${ders.ad} ${ders.kod.toLowerCase()} ${yazili.ad.toLowerCase()} ${yazili.kod}`.toLowerCase()
+                        });
+                    });
+                });
+            });
+            return veriler;
+        }
+
+        const aramaVerisi = aramaVerisiOlustur();
+
+        aramaInput.addEventListener('input', function() {
+            const sorgu = this.value.trim().toLowerCase();
+            if (sorgu.length < 2) {
+                aramaSonuclari.classList.remove('goster');
+                aramaSonuclari.innerHTML = '';
+                return;
+            }
+
+            const sonuclar = aramaVerisi.filter(v => v.aramaMetni.includes(sorgu)).slice(0, 8);
+
+            if (sonuclar.length === 0) {
+                aramaSonuclari.innerHTML = '<div class="arama-sonuc-item" style="color:var(--muted);cursor:default;"><i class="fa-solid fa-circle-xmark"></i>Sonuç bulunamadı</div>';
+                aramaSonuclari.classList.add('goster');
+                return;
+            }
+
+            aramaSonuclari.innerHTML = sonuclar.map((s, i) => `
+                <div class="arama-sonuc-item" role="option" data-index="${i}"
+                     data-sinif="${s.sinif}" data-ders="${s.ders}" data-yazili="${s.yazili}">
+                    <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
+                    <span>${s.etiket}</span>
+                </div>
+            `).join('');
+            aramaSonuclari.classList.add('goster');
+        });
+
+        // Arama sonucuna tıklama
+        aramaSonuclari.addEventListener('click', function(e) {
+            const item = e.target.closest('.arama-sonuc-item');
+            if (!item || !item.dataset.sinif) return;
+
+            secimSinif.value = item.dataset.sinif;
+            secimDers.value = item.dataset.ders;
+            secimYazili.value = item.dataset.yazili;
+            secimKontrol();
+            aramaInput.value = '';
+            aramaSonuclari.classList.remove('goster');
+            toastGoster('Seçimler otomatik dolduruldu.', 'bilgi');
+        });
+
+        // Arama dışına tıklanınca kapat
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.arama-alani')) {
+                aramaSonuclari.classList.remove('goster');
+            }
+        });
+
+        /* ============================================
+           8. GALERİ & DOSYA YOLU OLUŞTURUCU
+           ============================================ */
+        const galeriAlani = document.getElementById('galeriAlani');
+        const galeriBaslik = document.getElementById('galeriBaslik');
+        const galeriBaslikText = document.getElementById('galeriBaslikText');
+        const bosEkran = document.getElementById('bosEkran');
+
+        let mevcutGorseller = []; // Lightbox için mevcut görsel yolları
+
+        // Dinamik dosya yolu oluşturucu
+        // Format: images/[Sınıf]/[Ders]/[Sınıf][YazılıNo][Ders][GörselNo].png
+        function dosyaYoluOlustur(sinif, dersKod, yaziliNo, gorselNo) {
+            return `images/${sinif}/${dersKod}/${sinif}${yaziliNo}${dersKod}${gorselNo}.png`;
+        }
+
+        getirButon.addEventListener('click', function() {
+            const sinif = secimSinif.value;
+            const ders = secimDers.value;
+            const yazili = secimYazili.value;
+
+            if (!sinif || !ders || !yazili) return;
+
+            // Ders adını bul
+            const dersBilgi = DERSLER.find(d => d.kod === ders);
+            const yaziliBilgi = YAZILI_TURLERI.find(y => y.kod === yazili);
+
+            galeriBaslikText.textContent = `${sinif}. Sınıf ${dersBilgi.ad} — ${yaziliBilgi.ad}`;
+            galeriBaslik.style.display = 'flex';
+            bosEkran.classList.remove('goster');
+
+            // Görsel yollarını oluştur
+            mevcutGorseller = [];
+            for (let i = 1; i <= GORSEL_SAYISI; i++) {
+                mevcutGorseller.push(dosyaYoluOlustur(sinif, ders, yazili, i));
+            }
+
+            // Skeleton loading göster
+            galeriAlani.innerHTML = '';
+            galeriAlani.style.display = '';
+            for (let i = 0; i < GORSEL_SAYISI; i++) {
+                galeriAlani.appendChild(skeletonKartOlustur(i));
+            }
+
+            // Görselleri yükle (lazy loading taklidi - sıralı yükleme)
+            mevcutGorseller.forEach((yol, index) => {
+                setTimeout(() => {
+                    gorselYukle(yol, index, sinif, dersBilgi, yaziliBilgi);
+                }, 300 + (index * 200));
+            });
+
+            toastGoster('Notlar yükleniyor...', 'bilgi');
+        });
+
+        function skeletonKartOlustur(index) {
+            const kart = document.createElement('div');
+            kart.className = 'skeleton-kart glass';
+            kart.style.animationDelay = (index * 0.08) + 's';
+            kart.innerHTML = `
+                <div class="skeleton-gorsel"></div>
+                <div class="skeleton-bilgi">
+                    <div class="skeleton-cizgi" style="width:60%"></div>
+                    <div class="skeleton-cizgi" style="width:25%"></div>
+                </div>
+            `;
+            return kart;
+        }
+
+        function gorselYukle(yol, index, sinif, dersBilgi, yaziliBilgi) {
+            const skeleton = galeriAlani.children[index];
+            if (!skeleton) return;
+
+            const kart = document.createElement('div');
+            kart.className = 'not-karti glass';
+            kart.style.animationDelay = (index * 0.1) + 's';
+            kart.setAttribute('role', 'button');
+            kart.setAttribute('tabindex', '0');
+            kart.setAttribute('aria-label', `${sinif}. Sınıf ${dersBilgi.ad} ${yaziliBilgi.ad} Sayfa ${index + 1}`);
+
+            kart.innerHTML = `
+                <div class="not-karti-gorsel">
+                    <img src="${yol}" alt="${sinif}. Sınıf ${dersBilgi.ad} ${yaziliBilgi.ad} - Sayfa ${index + 1}" loading="lazy" draggable="false">
+                    <div class="kalkan" aria-hidden="true"></div>
+                    <div class="gorsel-yok" style="display:none">
+                        <i class="fa-solid fa-image-slash" aria-hidden="true"></i>
+                        <span>Yüklenemedi</span>
+                    </div>
+                </div>
+                <div class="not-karti-bilgi">
+                    <span class="not-karti-sayfa">Sayfa ${index + 1} / ${GORSEL_SAYISI}</span>
+                    <button class="favori-btn ${favoriKontrol(yol) ? 'favoriledi' : ''}"
+                            data-yol="${yol}"
+                            aria-label="${favoriKontrol(yol) ? 'Favorilerden çıkar' : 'Favorilere ekle'}">
+                        <i class="fa-${favoriKontrol(yol) ? 'solid' : 'regular'} fa-heart"></i>
+                    </button>
+                </div>
+            `;
+
+            // Görsel yükleme hatası
+            const img = kart.querySelector('img');
+            img.addEventListener('error', function() {
+                this.style.display = 'none';
+                kart.querySelector('.gorsel-yok').style.display = 'flex';
+            });
+
+            // Karta tıkla -> Lightbox aç
+            kart.addEventListener('click', function(e) {
+                // Favori butonuna tıklanırsa lightbox açma
+                if (e.target.closest('.favori-btn')) return;
+                lightboxAc(index);
+                sonGoruntuleniEkle(yol, sinif, dersBilgi, yaziliBilgi);
+            });
+
+            // Klavye ile aç
+            kart.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    lightboxAc(index);
+                    sonGoruntuleniEkle(yol, sinif, dersBilgi, yaziliBilgi);
+                }
+            });
+
+            // Favori butonu
+            const favBtn = kart.querySelector('.favori-btn');
+            favBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                favoriToggle(this, yol);
+            });
+
+            // Skeleton'u kart ile değiştir
+            if (skeleton) {
+                skeleton.replaceWith(kart);
+            }
+
+            // Tüm görseller yüklendikten sonra boş ekran kontrolü
+            if (index === GORSEL_SAYISI - 1) {
+                setTimeout(() => {
+                    const hataliGorseller = galeriAlani.querySelectorAll('.gorsel-yok[style*="flex"]');
+                    if (hataliGorseller.length === GORSEL_SAYISI) {
+                        bosEkran.classList.add('goster');
+                        galeriAlani.style.display = 'none';
+                    }
+                }, 1000);
+            }
+        }
+
+        /* ============================================
+           9. LIGHTBOX MODÜLÜ
+           ============================================ */
+        const lightboxModal = document.getElementById('lightboxModal');
+        const lbImg = document.getElementById('lbImg');
+        const lbKapat = document.getElementById('lbKapat');
+        const lbOnceki = document.getElementById('lbOnceki');
+        const lbSonraki = document.getElementById('lbSonraki');
+        const lbSayac = document.getElementById('lbSayac');
+        const lbZoomBilgi = document.getElementById('lbZoomBilgi');
+        const lbImgWrap = document.getElementById('lbImgWrap');
+
+        let lbMevcutIndex = 0;
+        let lbZoomSeviye = 1;
+        let lbSurukleniyor = false;
+        let lbBaslangicX = 0;
+        let lbBaslangicY = 0;
+        let lbTranslateX = 0;
+        let lbTranslateY = 0;
+        let lbTouchBaslangicX = 0;
+
+        function lightboxAc(index) {
+            if (mevcutGorseller.length === 0) return;
+            lbMevcutIndex = index;
+            lbZoomSeviye = 1;
+            lbTranslateX = 0;
+            lbTranslateY = 0;
+            gorselGuncelle();
+            lightboxModal.classList.add('acik');
+            document.body.style.overflow = 'hidden';
+            lbZoomBilgi.classList.remove('goster');
+        }
+
+        function lightboxKapat() {
+            lightboxModal.classList.remove('acik');
+            document.body.style.overflow = '';
+            lbImg.style.transform = '';
+        }
+
+        function gorselGuncelle() {
+            lbImg.src = mevcutGorseller[lbMevcutIndex];
+            lbImg.alt = `Sayfa ${lbMevcutIndex + 1}`;
+            lbSayac.textContent = `${lbMevcutIndex + 1} / ${mevcutGorseller.length}`;
+            // Zoom sıfırla
+            lbZoomSeviye = 1;
+            lbTranslateX = 0;
+            lbTranslateY = 0;
+            lbImg.style.transform = 'scale(1) translate(0px, 0px)';
+            lbZoomBilgi.classList.remove('goster');
+
+            // Navigasyon butonlarını göster/gizle
+            lbOnceki.style.opacity = lbMevcutIndex === 0 ? '0.3' : '1';
+            lbSonraki.style.opacity = lbMevcutIndex === mevcutGorseller.length - 1 ? '0.3' : '1';
+            lbOnceki.style.pointerEvents = lbMevcutIndex === 0 ? 'none' : 'auto';
+            lbSonraki.style.pointerEvents = lbMevcutIndex === mevcutGorseler.length - 1 ? 'none' : 'auto';
+        }
+
+        function lbGit(yon) {
+            let yeniIndex = lbMevcutIndex + yon;
+            if (yeniIndex < 0 || yeniIndex >= mevcutGorseller.length) return;
+            lbMevcutIndex = yeniIndex;
+            gorselGuncelle();
+        }
+
+        // Lightbox navigasyon
+        lbKapat.addEventListener('click', lightboxKapat);
+        lbOnceki.addEventListener('click', () => lbGit(-1));
+        lbSonraki.addEventListener('click', () => lbGit(1));
+
+        // Arka plana tıkla kapat
+        lightboxModal.addEventListener('click', function(e) {
+            if (e.target === lightboxModal) lightboxKapat();
+        });
+
+        // Klavye navigasyonu
+        document.addEventListener('keydown', function(e) {
+            if (!lightboxModal.classList.contains('acik')) return;
+
+            switch (e.key) {
+                case 'Escape':
+                    lightboxKapat();
+                    break;
+                case 'ArrowLeft':
+                    lbGit(-1);
+                    break;
+                case 'ArrowRight':
+                    lbGit(1);
+                    break;
+                case '+':
+                case '=':
+                    lbZoomUygula(0.2);
+                    break;
+                case '-':
+                    lbZoomUygula(-0.2);
+                    break;
+                case '0':
+                    lbZoomSeviye = 1;
+                    lbTranslateX = 0;
+                    lbTranslateY = 0;
+                    lbImg.style.transform = 'scale(1) translate(0px, 0px)';
+                    break;
+            }
+        });
+
+        // Scroll ile zoom
+        lbImgWrap.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.15 : 0.15;
+            lbZoomUygula(delta);
+        }, { passive: false });
+
+        function lbZoomUygula(delta) {
+            lbZoomSeviye = Math.max(0.5, Math.min(4, lbZoomSeviye + delta));
+            if (lbZoomSeviye <= 1) {
+                lbTranslateX = 0;
+                lbTranslateY = 0;
+            }
+            lbImg.style.transform = `scale(${lbZoomSeviye}) translate(${lbTranslateX}px, ${lbTranslateY}px)`;
+            lbZoomBilgi.textContent = `${Math.round(lbZoomSeviye * 100)}%`;
+            lbZoomBilgi.classList.add('goster');
+            clearTimeout(lbZoomBilgi._timer);
+            lbZoomBilgi._timer = setTimeout(() => lbZoomBilgi.classList.remove('goster'), 1200);
+        }
+
+        // Çift tıklama ile zoom
+        lbImgWrap.addEventListener('dblclick', function() {
+            if (lbZoomSeviye > 1.2) {
+                lbZoomSeviye = 1;
+                lbTranslateX = 0;
+                lbTranslateY = 0;
+            } else {
+                lbZoomSeviye = 2.5;
+            }
+            lbImg.style.transform = `scale(${lbZoomSeviye}) translate(${lbTranslateX}px, ${lbTranslateY}px)`;
+        });
+
+        // Zoom durumunda sürükleme
+        lbImgWrap.addEventListener('mousedown', function(e) {
+            if (lbZoomSeviye <= 1) return;
+            e.preventDefault();
+            lbSurukleniyor = true;
+            lbBaslangicX = e.clientX - lbTranslateX;
+            lbBaslangicY = e.clientY - lbTranslateY;
+            lbImgWrap.style.cursor = 'grabbing';
+        });
+
+        document.addEventListener('mousemove', function(e) {
+            if (!lbSurukleniyor) return;
+            lbTranslateX = e.clientX - lbBaslangicX;
+            lbTranslateY = e.clientY - lbBaslangicY;
+            lbImg.style.transform = `scale(${lbZoomSeviye}) translate(${lbTranslateX}px, ${lbTranslateY}px)`;
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (lbSurukleniyor) {
+                lbSurukleniyor = false;
+                lbImgWrap.style.cursor = '';
+            }
+        });
+
+        // Mobil swipe desteği
+        let lbTouchStartX = 0;
+        let lbTouchStartY = 0;
+
+        lbImgWrap.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                lbTouchStartX = e.touches[0].clientX;
+                lbTouchStartY = e.touches[0].clientY;
+            }
+        }, { passive: true });
+
+        lbImgWrap.addEventListener('touchend', function(e) {
+            if (e.changedTouches.length === 1) {
+                const farkX = e.changedTouches[0].clientX - lbTouchStartX;
+                const farkY = e.changedTouches[0].clientY - lbTouchStartY;
+
+                // Yatay kaydırma dominantsa ve yeterince uzunsa
+                if (Math.abs(farkX) > Math.abs(farkY) && Math.abs(farkX) > 50) {
+                    if (farkX > 0) lbGit(-1);
+                    else lbGit(1);
+                }
+            }
+        }, { passive: true });
+
+        /* ============================================
+           10. FAVORİLER MODÜLÜ
+           ============================================ */
+        function favorileriGetir() {
+            try {
+                return JSON.parse(localStorage.getItem('favoriler')) || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function favorileriKaydet(favoriler) {
+            localStorage.setItem('favoriler', JSON.stringify(favoriler));
+        }
+
+        function favoriKontrol(yol) {
+            return favorileriGetir().includes(yol);
+        }
+
+        function favoriToggle(btn, yol) {
+            let favoriler = favorileriGetir();
+            const index = favoriler.indexOf(yol);
+
+            if (index > -1) {
+                favoriler.splice(index, 1);
+                btn.classList.remove('favoriledi');
+                btn.querySelector('i').className = 'fa-regular fa-heart';
+                btn.setAttribute('aria-label', 'Favorilere ekle');
+                toastGoster('Favorilerden çıkarıldı.', 'bilgi');
+            } else {
+                favoriler.push(yol);
+                btn.classList.add('favoriledi');
+                btn.querySelector('i').className = 'fa-solid fa-heart';
+                btn.setAttribute('aria-label', 'Favorilerden çıkar');
+                toastGoster('Favorilere eklendi.', 'basari');
+            }
+
+            favorileriKaydet(favoriler);
+            favoriPaneliGuncelle();
+        }
+
+        function favoriPaneliGuncelle() {
+            const favoriler = favorileriGetir();
+            const bolum = document.getElementById('favorilerBolum');
+            const grid = document.getElementById('favorilerGrid');
+
+            if (favoriler.length === 0) {
+                bolum.style.display = 'none';
+                return;
+            }
+
+            bolum.style.display = 'block';
+            grid.innerHTML = favoriler.map(yol => {
+                const bilgiler = yolDanBilgi(yol);
+                return `
+                    <div class="mini-kart glass" data-yol="${yol}" role="button" tabindex="0" aria-label="${bilgiler.etiket}">
+                        <div class="mini-kart-ders">${bilgiler.ders}</div>
+                        <div class="mini-kart-detay">${bilgiler.detay}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Mini kart tıklama
+            grid.querySelectorAll('.mini-kart').forEach(kart => {
+                const handler = () => {
+                    const yol = kart.dataset.yol;
+                    const bilgiler = yolDanBilgi(yol);
+                    // Seçim kutularını doldur ve getir
+                    secimSinif.value = bilgiler.sinif;
+                    secimDers.value = bilgiler.dersKod;
+                    secimYazili.value = bilgiler.yaziliNo;
+                    secimKontrol();
+                    getirButon.click();
+                };
+                kart.addEventListener('click', handler);
+                kart.addEventListener('keydown', (e) => { if (e.key === 'Enter') handler(); });
+            });
+        }
+
+        // Favori temizle
+        document.getElementById('favoriTemizle').addEventListener('click', function() {
+            localStorage.removeItem('favoriler');
+            favoriPaneliGuncelle();
+            // Galeri favori butonlarını güncelle
+            document.querySelectorAll('.favori-btn').forEach(btn => {
+                btn.classList.remove('favoriledi');
+                btn.querySelector('i').className = 'fa-regular fa-heart';
+            });
+            toastGoster('Tüm favoriler temizlendi.', 'bilgi');
+        });
+
+        /* ============================================
+           11. SON GÖRÜNTÜLENENLER MODÜLÜ
+           ============================================ */
+        function sonGoruntulenleriGetir() {
+            try {
+                return JSON.parse(localStorage.getItem('son_goruntulen')) || [];
+            } catch {
+                return [];
+            }
+        }
+
+        function sonGoruntulenleriKaydet(liste) {
+            // En fazla 10 öğe tut
+            localStorage.setItem('son_goruntulen', JSON.stringify(liste.slice(0, 10)));
+        }
+
+        function sonGoruntuleniEkle(yol, sinif, dersBilgi, yaziliBilgi) {
+            let liste = sonGoruntulenleriGetir();
+            // Tekrar edenleri kaldır
+            liste = liste.filter(item => item.yol !== yol);
+            // Başa ekle
+            liste.unshift({
+                yol: yol,
+                sinif: sinif,
+                ders: dersBilgi.ad,
+                dersKod: dersBilgi.kod,
+                yazili: yaziliBilgi.ad,
+                zaman: Date.now()
+            });
+            sonGoruntulenleriKaydet(liste);
+            sonGoruntulenPaneliGuncelle();
+        }
+
+        function sonGoruntulenPaneliGuncelle() {
+            const liste = sonGoruntulenleriGetir();
+            const bolum = document.getElementById('sonGoruntulenlerBolum');
+            const grid = document.getElementById('sonGoruntulenlerGrid');
+
+            if (liste.length === 0) {
+                bolum.style.display = 'none';
+                return;
+            }
+
+            bolum.style.display = 'block';
+            grid.innerHTML = liste.map(item => `
+                <div class="mini-kart glass" data-yol="${item.yol}" data-sinif="${item.sinif}" data-ders="${item.dersKod}" data-yazili="" role="button" tabindex="0" aria-label="${item.sinif}. Sınıf ${item.ders}">
+                    <div class="mini-kart-ders">${item.ders}</div>
+                    <div class="mini-kart-detay">${item.sinif}. Sınıf</div>
+                </div>
+            `).join('');
+
+            // Mini kart tıklama
+            grid.querySelectorAll('.mini-kart').forEach(kart => {
+                const handler = () => {
+                    const bilgiler = yolDanBilgi(kart.dataset.yol);
+                    if (bilgiler.sinif && bilgiler.dersKod && bilgiler.yaziliNo) {
+                        secimSinif.value = bilgiler.sinif;
+                        secimDers.value = bilgiler.dersKod;
+                        secimYazili.value = bilgiler.yaziliNo;
+                        secimKontrol();
+                        getirButon.click();
+                    }
+                };
+                kart.addEventListener('click', handler);
+                kart.addEventListener('keydown', (e) => { if (e.key === 'Enter') handler(); });
+            });
+        }
+
+        // Son görüntülenen temizle
+        document.getElementById('sonTemizle').addEventListener('click', function() {
+            localStorage.removeItem('son_goruntulen');
+            sonGoruntulenPaneliGuncelle();
+            toastGoster('Geçmiş temizlendi.', 'bilgi');
+        });
+
+        /* ============================================
+           12. YOL DANI BİLGİ ÇIKARICI
+           ============================================ */
+        function yolDanBilgi(yol) {
+            // images/10/FIZ/1021FIZ3.png -> {sinif:'10', dersKod:'FIZ', yaziliNo:'21', gorselNo:'3'}
+            const sonuc = {
+                sinif: '',
+                dersKod: '',
+                yaziliNo: '',
+                gorselNo: '',
+                ders: '',
+                detay: '',
+                etiket: ''
+            };
+
+            try {
+                const parcalar = yol.split('/');
+                if (parcalar.length < 3) return sonuc;
+
+                sonuc.sinif = parcalar[1];
+                sonuc.dersKod = parcalar[2];
+
+                const dosyaAdi = parcalar[3].replace('.png', '');
+                // 1021FIZ3 -> sinif=10, yaziliNo=21, dersKod=FIZ, gorselNo=3
+                const dersObj = DERSLER.find(d => dosyaAdi.includes(d.kod));
+                if (dersObj) {
+                    sonuc.dersKod = dersObj.kod;
+                    sonuc.ders = dersObj.ad;
+                    const kalan = dosyaAdi.replace(dersObj.kod, '');
+                    // Kalan: 10213 -> sinif=10, yaziliNo=21, gorselNo=3
+                    sonuc.gorselNo = kalan.slice(-1);
+                    const ortaNokta = kalan.slice(0, -1);
+                    // 1021 -> sinif'in basamak sayısını bul
+                    const sinifUzunluk = sonuc.sinif.length;
+                    sonuc.sinif = ortaNokta.slice(0, sinifUzunluk);
+                    sonuc.yaziliNo = ortaNokta.slice(sinifUzunluk);
+                }
+
+                const yaziliBilgi = YAZILI_TURLERI.find(y => y.kod === sonuc.yaziliNo);
+                sonuc.detay = `${sonuc.sinif}. Sınıf ${yaziliBilgi ? yaziliBilgi.ad : ''}`;
+                sonuc.etiket = `${sonuc.sinif}. Sınıf ${sonuc.ders} ${yaziliBilgi ? yaziliBilgi.ad : ''}`;
+            } catch {
+                // Hata durumunda boş döndür
+            }
+
+            return sonuc;
+        }
+
+        /* ============================================
+           13. ALT BÖLÜMLERİ YÜKLE
+           ============================================ */
+        function altBolumleriYukle() {
+            favoriPaneliGuncelle();
+            sonGoruntulenPaneliGuncelle();
+        }
+
+        /* ============================================
+           14. İLETİŞİM FORMU
+           ============================================ */
+        document.getElementById('iletisimForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const inputlar = this.querySelectorAll('.iletisim-input, .iletisim-textarea');
+            let gecerli = true;
+
+            inputlar.forEach(input => {
+                if (!input.value.trim()) {
+                    gecerli = false;
+                    input.style.borderColor = 'var(--danger)';
+                    setTimeout(() => { input.style.borderColor = ''; }, 2000);
+                }
+            });
+
+            if (!gecerli) {
+                toastGoster('Lütfen tüm alanları doldurunuz.', 'uyari');
+                return;
+            }
+
+            // E-posta doğrulama
+            const email = this.querySelector('input[type="email"]');
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+                toastGoster('Lütfen geçerli bir e-posta adresi giriniz.', 'uyari');
+                email.style.borderColor = 'var(--danger)';
+                setTimeout(() => { email.style.borderColor = ''; }, 2000);
+                return;
+            }
+
+            toastGoster('Mesajınız başarıyla gönderildi. En kısa sürede dönüş yapılacaktır.', 'basari');
+            this.reset();
+        });
+
+        /* ============================================
+           15. BAŞLATMA & OTOMATİK GİRİŞ
+           ============================================ */
+        async function baslat() {
+            const mevcutVeri = localStorage.getItem('lisans_veri');
+
+            if (mevcutVeri) {
+                try {
+                    const veri = JSON.parse(mevcutVeri);
+                    if (veri.lisans && lisansDogrula(veri.lisans)) {
+                        // Lisans geçerli, IP kontrolü yap
+                        yuklemeEkrani.style.display = 'flex';
+                        lisansPaneli.style.display = 'none';
+
+                        const ipDurum = await ipKilitKontrol(veri.lisans);
+
+                        yuklemeEkrani.style.display = 'none';
+
+                        if (ipDurum === 'eslesti' || ipDurum === 'ip_alinamadi') {
+                            uygulamayiGoster();
+                            return;
+                        } else if (ipDurum === 'ip_eslesmiyor') {
+                            lisansPaneli.style.display = 'flex';
+                            lisansHata.textContent = 'Bu lisans kodu başka bir ağda/cihazda kilitlenmiştir!';
+                            return;
+                        }
+                    }
+                } catch {
+                    // Bozuk veri, lisans panelini göster
+                }
+            }
+
+            // Lisans panelini göster
+            yuklemeEkrani.style.display = 'none';
+            lisansPaneli.style.display = 'flex';
+            lisansInput.focus();
+        }
+
+        // Uygulamayı başlat
+        baslat();
+
+    })();
+    </script>
+</body>
+</html>
