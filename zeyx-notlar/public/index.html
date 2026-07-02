@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lise Yazılı Notları</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ============================================
+           CSS DEĞİŞKENLERİ & TEMEL RESET (Senin Kodların)
+           ============================================ */
+        :root {
+            --bg: #08080c;
+            --bg-secondary: #0f0f16;
+            --fg: #f2f0ed;
+            --fg-dim: #b0aead;
+            --muted: #5e5e6e;
+            --accent: #c9a84c;
+            --accent-light: #e8c96a;
+            --accent-glow: rgba(201, 168, 76, 0.15);
+            --card: rgba(255, 255, 255, 0.04);
+            --card-hover: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(201, 168, 76, 0.25);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-strong: rgba(255, 255, 255, 0.08);
+            --danger: #e05555;
+            --success: #4aba7a;
+            --warning: #d4a24e;
+            --radius: 16px;
+            --radius-sm: 10px;
+            --radius-xs: 6px;
+            --blur: 20px;
+            --font: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background:
+                radial-gradient(ellipse 80% 60% at 15% 50%, rgba(201, 168, 76, 0.07) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 85% 20%, rgba(160, 110, 40, 0.05) 0%, transparent 55%),
+                radial-gradient(ellipse 70% 50% at 50% 90%, rgba(120, 80, 30, 0.04) 0%, transparent 50%),
+                linear-gradient(160deg, #08080c 0%, #0e0e18 40%, #0a0a10 100%);
+            background-size: 200% 200%, 200% 200%, 200% 200%, 100% 100%;
+            animation: fluidDrift 25s ease-in-out infinite;
+        }
+
+        @keyframes fluidDrift {
+            0%, 100% { background-position: 0% 50%, 100% 0%, 50% 100%, 0% 0%; }
+            33% { background-position: 80% 30%, 20% 80%, 80% 20%, 0% 0%; }
+            66% { background-position: 30% 70%, 70% 30%, 20% 60%, 0% 0%; }
+        }
+
+        .orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: -1; will-change: transform; }
+        .orb-1 { width: 420px; height: 420px; background: radial-gradient(circle, rgba(201, 168, 76, 0.10) 0%, transparent 70%); top: -80px; left: -60px; animation: orbMove1 30s ease-in-out infinite; filter: blur(60px); }
+        .orb-2 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(180, 120, 50, 0.07) 0%, transparent 70%); bottom: -50px; right: -40px; animation: orbMove2 35s ease-in-out infinite; filter: blur(70px); }
+        .orb-3 { width: 280px; height: 280px; background: radial-gradient(circle, rgba(140, 90, 30, 0.06) 0%, transparent 70%); top: 40%; left: 60%; animation: orbMove3 28s ease-in-out infinite; filter: blur(80px); }
+
+        @keyframes orbMove1 { 0%, 100% { transform: translate(0, 0) scale(1); } 25% { transform: translate(120px, 80px) scale(1.1); } 50% { transform: translate(60px, 160px) scale(0.95); } 75% { transform: translate(-40px, 100px) scale(1.05); } }
+        @keyframes orbMove2 { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(-100px, -60px) scale(1.08); } 66% { transform: translate(-50px, -120px) scale(0.92); } }
+        @keyframes orbMove3 { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-80px, 60px); } }
+
+        .glass { background: var(--glass); backdrop-filter: blur(var(--blur)) saturate(180%); -webkit-backdrop-filter: blur(var(--blur)) saturate(180%); border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.04); }
+        .glass-strong { background: var(--glass-strong); backdrop-filter: blur(24px) saturate(200%); -webkit-backdrop-filter: blur(24px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.10); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+
+        #lisansPaneli { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.6s ease; }
+        .lisans-kart { width: 100%; max-width: 420px; padding: 48px 36px; border-radius: var(--radius); text-align: center; animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+        .lisans-ikon { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #a08030); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 24px; color: #08080c; box-shadow: 0 4px 20px var(--accent-glow); }
+        .lisans-kart h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.02em; }
+        .lisans-kart p { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; line-height: 1.5; }
+        .lisans-input-wrap { position: relative; margin-bottom: 20px; }
+        .lisans-input { width: 100%; padding: 14px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(255, 255, 255, 0.04); color: var(--fg); font-family: var(--font); font-size: 0.95rem; letter-spacing: 0.05em; outline: none; transition: var(--transition); }
+        .lisans-input::placeholder { color: var(--muted); font-size: 0.85rem; letter-spacing: 0; }
+        .lisans-input:focus { border-color: var(--border-accent); box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1); }
+        .lisans-hata { color: var(--danger); font-size: 0.8rem; margin-top: -12px; margin-bottom: 16px; min-height: 20px; transition: var(--transition); }
+        .btn-ana { position: relative; width: 100%; padding: 14px 24px; border: none; border-radius: var(--radius-sm); background: linear-gradient(135deg, var(--accent), #a08030); color: #08080c; font-family: var(--font); font-size: 0.95rem; font-weight: 600; cursor: pointer; overflow: hidden; transition: var(--transition); letter-spacing: 0.01em; }
+        .btn-ana:hover { transform: translateY(-1px); box-shadow: 0 6px 24px var(--accent-glow); }
+        .btn-ana:active { transform: translateY(0); }
+
+        #yuklemeEkrani { position: fixed; inset: 0; z-index: 9998; display: none; align-items: center; justify-content: center; background: var(--bg); }
+        .yukleyici { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .yukleyici-cember { width: 44px; height: 44px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .yukleyici-text { color: var(--muted); font-size: 0.85rem; }
+
+        #anaUygulama { display: none; min-height: 100vh; }
+        header { position: sticky; top: 0; z-index: 100; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; background: rgba(8, 8, 12, 0.75); backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); border-bottom: 1px solid var(--border); }
+        .logo-alan { display: flex; align-items: center; gap: 12px; }
+        .logo-ikon { width: 36px; height: 36px; border-radius: var(--radius-xs); background: linear-gradient(135deg, var(--accent), #a08030); display: flex; align-items: center; justify-content: center; font-size: 16px; color: #08080c; font-weight: 800; }
+        .logo-yazi { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+        .logo-yazi span { color: var(--accent); }
+
+        main { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+        .sayfa { display: none; animation: fadeIn 0.4s ease; }
+        .sayfa.aktif { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hero { text-align: center; margin-bottom: 48px; padding-top: 20px; }
+        .hero h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin-bottom: 14px; }
+        .hero h1 .vurgu { background: linear-gradient(135deg, var(--accent-light), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hero p { color: var(--muted); font-size: clamp(0.9rem, 2vw, 1.05rem); max-width: 540px; margin: 0 auto; line-height: 1.6; }
+
+        /* Bildirim (Toast) CSS */
+        #toastKonteyneri { position: fixed; top: 80px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+        .toast { pointer-events: auto; padding: 14px 20px; border-radius: var(--radius-sm); background: rgba(15, 15, 22, 0.95); backdrop-filter: blur(20px); border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); font-size: 0.84rem; color: var(--fg-dim); display: flex; align-items: center; gap: 10px; min-width: 280px; max-width: 400px; animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .toast-icon { font-size: 1rem; flex-shrink: 0; }
+        .toast.basari .toast-icon { color: var(--success); }
+        .toast.hata .toast-icon { color: var(--danger); }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- Arka plan Orb'ları -->
+    <div class="bg-canvas"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Lisans Giriş Ekranı -->
+    <div id="lisansPaneli" class="glass-strong">
+        <div class="lisans-kart glass">
+            <div class="lisans-ikon"><i class="fa-solid fa-key"></i></div>
+            <h2>Sisteme Giriş</h2>
+            <p>Lise Yazılı Notları platformuna erişmek için lütfen geçerli lisans kodunuzu girin.</p>
+            <div class="lisans-input-wrap">
+                <input type="text" id="licenseInput" class="lisans-input" placeholder="Lisans Kodunu Girin...">
+            </div>
+            <div id="hataMesaji" class="lisans-hata"></div>
+            <button id="loginBtn" class="btn-ana" onclick="verifyCode()">Giriş Yap</button>
+        </div>
+    </div>
+
+    <!-- Yükleme Ekranı -->
+    <div id="yuklemeEkrani">
+        <div class="yukleyici">
+            <div class="yukleyici-cember"></div>
+            <div class="yukleyici-text">Bağlantı Kuruluyor...</div>
+        </div>
+    </div>
+
+    <!-- Ana Uygulama Arayüzü -->
+    <div id="anaUygulama">
+        <header>
+            <div class="logo-alan">
+                <div class="logo-ikon">L</div>
+                <div class="logo-yazi">Lise <span>Notları</span></div>
+            </div>
+        </header>
+
+        <main>
+            <section class="sayfa aktif hero">
+                <h1>Sınavlara <span class="vurgu">En İyi</span> Şekilde Hazırlan!</h1>
+                <p>Tüm ders notların tek bir platformda. Gelişmiş tasarım, hızlı erişim ve senin için özelleştirilmiş deneyim.</p>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Bildirim Alanı -->
+    <div id="toastKonteyneri"></div>
+
+    <script>
+        // Toast (Bildirim) Gösterme Fonksiyonu
+        function showToast(message, type) {
+            const container = document.getElementById('toastKonteyneri');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            const icon = type === 'basari' ? 'fa-check-circle' : 'fa-exclamation-circle';
+            toast.innerHTML = `<i class="fa-solid ${icon} toast-icon"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            // 3 saniye sonra bildirimi sil
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Netlify API ile Lisans Doğrulama
+        async function verifyCode() {
+            const code = document.getElementById('licenseInput').value;
+            const errorElement = document.getElementById('hataMesaji');
+            const panelElement = document.getElementById('lisansPaneli');
+            const loadingElement = document.getElementById('yuklemeEkrani');
+            const appElement = document.getElementById('anaUygulama');
+
+            if (!code) {
+                errorElement.innerText = "Lütfen bir lisans kodu girin.";
+                return;
+            }
+
+            errorElement.innerText = "";
+            loadingElement.style.display = "flex";
+
+            try {
+                // Burada mutlak yolu (absolute path) kullandık. Hata payı sıfır!
+                const res = await fetch(window.location.origin + '/api/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+
+                if (res.ok) {
+                    loadingElement.style.display = "none";
+                    panelElement.style.display = "none"; // Lisans panelini gizle
+                    appElement.style.display = "block"; // Ana uygulamayı göster
+                    showToast("Giriş başarılı! Sisteme hoş geldin.", "basari");
+                } else {
+                    loadingElement.style.display = "none";
+                    errorElement.innerText = "Geçersiz Lisans Kodu!";
+                    showToast("Girdiğin kod yanlış veya süresi dolmuş.", "hata");
+                }
+            } catch (err) {
+                loadingElement.style.display = "none";
+                errorElement.innerText = "Sunucu bağlantısı kurulamadı.";
+                showToast("Sunucuya ulaşılamıyor, lütfen ağı kontrol et.", "hata");
+                console.error("Fetch Hatası:", err);
+            }
+        }
+    </script>
+</body>
+</html>
